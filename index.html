@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FitPulse">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Автономный трекер привычек, рациона, никотина и веса">
+  <title>FitPulse — Форма и Привычки</title>
+
+  <!-- PWA Manifest via Data URI -->
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22FitPulse%22%2C%22short_name%22%3A%22FitPulse%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23000000%22%2C%22theme_color%22%3A%22%23000000%22%7D">
+  
+  <!-- Apple Touch Icon SVG via Data URI -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%23000000'/%3E%3Cpath d='M90 35 L135 145 L45 145 Z' fill='none' stroke='%2330D158' stroke-width='16' stroke-linejoin='round'/%3E%3Ccircle cx='90' cy='95' r='18' fill='%2364D2FF'/%3E%3C/svg%3E">
+
+  <style>
+    /* ----------------------------------------------------
+       RESET & CSS VARIABLES (Apple Health / Vercel Dark)
+    ---------------------------------------------------- */
+    :root {
+      --bg: #000000;
+      --card-bg: #1C1C1E;
+      --card-subtle: #2C2C2E;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-active: rgba(255, 255, 255, 0.18);
+      --text-main: #FFFFFF;
+      --text-secondary: #8E8E93;
+      --text-tertiary: #636366;
+      
+      --accent-green: #30D158;
+      --accent-green-dim: rgba(48, 209, 88, 0.15);
+      --accent-cyan: #64D2FF;
+      --accent-cyan-dim: rgba(100, 210, 255, 0.15);
+      --accent-orange: #FF9F0A;
+      --accent-orange-dim: rgba(255, 159, 10, 0.15);
+      --accent-red: #FF453A;
+      --accent-red-dim: rgba(255, 69, 58, 0.15);
+      --accent-purple: #BF5AF2;
+      --accent-purple-dim: rgba(191, 90, 242, 0.15);
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-pill: 9999px;
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: calc(var(--safe-top) + 12px);
+      padding-bottom: calc(var(--safe-bottom) + 95px);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ----------------------------------------------------
+       HEADER & NAVIGATION
+    ---------------------------------------------------- */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 2px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-logo svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .brand-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-live {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--accent-green-dim);
+      color: var(--accent-green);
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(48, 209, 88, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon-subtle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-icon-subtle:active {
+      transform: scale(0.92);
+      background: var(--card-subtle);
+      color: var(--text-main);
+    }
+
+    /* Date Switcher Bar */
+    .date-nav-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .date-nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .date-nav-btn:active {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .date-display-wrap {
+      text-align: center;
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .date-display-wrap:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .date-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .date-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    .btn-today-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-green);
+      background: var(--accent-green-dim);
+      border: 1px solid rgba(48, 209, 88, 0.25);
+      border-radius: var(--radius-pill);
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+
+    /* ----------------------------------------------------
+       CARDS BASE
+    ---------------------------------------------------- */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ----------------------------------------------------
+       1. WEIGHT PROGRESS CARD
+    ---------------------------------------------------- */
+    .weight-card {
+      background: linear-gradient(145deg, #1C1C1E 0%, #151517 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .weight-meta-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .weight-col-val {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+
+    .weight-col-val small {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-left: 2px;
+    }
+
+    .weight-col-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .weight-progress-track {
+      width: 100%;
+      height: 10px;
+      background: #2C2C2E;
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .weight-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-orange) 0%, var(--accent-green) 100%);
+      border-radius: var(--radius-pill);
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .weight-footer-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .weight-lost-badge {
+      color: var(--accent-green);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .btn-sm-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sm-action:active {
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ----------------------------------------------------
+       2. GITHUB-STYLE ACTIVITY CALENDAR
+    ---------------------------------------------------- */
+    .calendar-card {
+      padding: 16px 14px;
+    }
+
+    .calendar-legend-bar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .legend-box {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .calendar-scroll-wrap {
+      overflow-x: auto;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .calendar-scroll-wrap::-webkit-scrollbar {
+      display: none;
+    }
+
+    .github-grid {
+      display: grid;
+      grid-template-rows: repeat(7, 13px);
+      grid-auto-flow: column;
+      grid-auto-columns: 13px;
+      gap: 4px;
+      width: max-content;
+      padding: 2px;
+    }
+
+    .heat-cell {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      background: #242426;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      position: relative;
+    }
+
+    .heat-cell:active {
+      transform: scale(1.3);
+    }
+
+    .heat-cell.selected {
+      border: 1.5px solid #FFFFFF !important;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+      z-index: 2;
+    }
+
+    .heat-cell.lvl-0 { background: #262628; }
+    .heat-cell.lvl-1 { background: #1B4426; }
+    .heat-cell.lvl-2 { background: #257038; }
+    .heat-cell.lvl-3 { background: #2DA44E; }
+    .heat-cell.lvl-4 { background: #39D353; box-shadow: 0 0 4px rgba(57, 211, 83, 0.4); }
+
+    .cal-selected-info {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .cal-selected-date {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .cal-selected-summary {
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    /* ----------------------------------------------------
+       3. METRICS GRID (STEPS, CALORIES, WATER, NICOTINE)
+    ---------------------------------------------------- */
+    .metrics-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mini-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 106px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .mini-card:active {
+      background: var(--card-subtle);
+    }
+
+    .mini-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mini-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .mini-card-icon {
+      font-size: 16px;
+    }
+
+    .mini-card-val {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-top: 6px;
+      color: var(--text-main);
+    }
+
+    .mini-card-val small {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-left: 2px;
+    }
+
+    .mini-progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-pill);
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .mini-progress-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      transition: width 0.4s ease;
+    }
+
+    .mini-subtext {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ----------------------------------------------------
+       4. DAY TIMELINE FEED
+    ---------------------------------------------------- */
+    .timeline-card {
+      min-height: 200px;
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #242426;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tl-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tl-time {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      width: 42px;
+      flex-shrink: 0;
+    }
+
+    .tl-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .tl-badge.food { background: var(--accent-green-dim); color: var(--accent-green); }
+    .tl-badge.drink { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+    .tl-badge.nicotine { background: var(--accent-orange-dim); color: var(--accent-orange); }
+
+    .tl-content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .tl-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tl-detail {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    .tl-del-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .tl-del-btn:active {
+      color: var(--accent-red);
+      background: rgba(255, 69, 58, 0.1);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+
+    .empty-state-text {
+      font-size: 13px;
+    }
+
+    /* ----------------------------------------------------
+       STICKY BOTTOM QUICK ACTION BAR (FAB / iOS DOCK)
+    ---------------------------------------------------- */
+    .bottom-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(18, 18, 20, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      padding: 10px 16px calc(var(--safe-bottom) + 10px);
+      display: flex;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .dock-inner {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-quick-primary {
+      flex: 1;
+      height: 48px;
+      background: #FFFFFF;
+      color: #000000;
+      border: none;
+      border-radius: var(--radius-pill);
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(255, 255, 255, 0.25);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-quick-primary:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    .btn-dock-quick {
+      height: 48px;
+      padding: 0 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-dock-quick:active {
+      transform: scale(0.95);
+      background: var(--card-subtle);
+    }
+
+    /* ----------------------------------------------------
+       BOTTOM SHEET MODAL (iOS Style)
+    ---------------------------------------------------- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 500px;
+      background: #1C1C1E;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 16px 20px calc(var(--safe-bottom) + 24px);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-overlay.active .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 3px;
+      margin: 0 auto 16px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .sheet-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--text-secondary);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Segmented Control (iOS style) */
+    .segmented-control {
+      background: #2C2C2E;
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+      margin-bottom: 20px;
+    }
+
+    .seg-item {
+      flex: 1;
+      padding: 8px 6px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .seg-item.active {
+      background: #636366;
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Form Fields */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input {
+      background: #2C2C2E;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: #FFFFFF;
+      font-size: 16px; /* Crucial for iOS: 16px prevents Safari zoom */
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent-green);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    /* Quick Pills Suggestions */
+    .quick-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+
+    .tag-pill {
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tag-pill:active {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+    }
+
+    /* Drinks 3 Round Buttons */
+    .drinks-round-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 14px 0 16px;
+    }
+
+    .drink-circle-btn {
+      aspect-ratio: 1;
+      background: #2C2C2E;
+      border: 1.5px solid rgba(100, 210, 255, 0.25);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      color: var(--text-main);
+      padding: 6px;
+      text-align: center;
+    }
+
+    .drink-circle-btn:active {
+      transform: scale(0.92);
+      background: var(--accent-cyan-dim);
+      border-color: var(--accent-cyan);
+    }
+
+    .drink-circle-btn .vol-main {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .drink-circle-btn .vol-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Nicotine 2 Large Buttons */
+    .nicotine-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0 16px;
+    }
+
+    .nic-action-btn {
+      height: 90px;
+      background: #2C2C2E;
+      border: 1.5px solid rgba(255, 159, 10, 0.25);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .nic-action-btn:active {
+      transform: scale(0.95);
+      background: var(--accent-orange-dim);
+      border-color: var(--accent-orange);
+    }
+
+    .nic-action-btn .nic-icon {
+      font-size: 26px;
+    }
+
+    .nic-action-btn .nic-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-orange);
+    }
+
+    /* Submit Button inside Modal */
+    .btn-submit-main {
+      width: 100%;
+      height: 48px;
+      background: var(--accent-green);
+      color: #000000;
+      border: none;
+      border-radius: var(--radius-pill);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-submit-main:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    /* Toast Notification (iOS banner style) */
+    .toast-banner {
+      position: fixed;
+      top: calc(var(--safe-top) + 16px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: rgba(30, 30, 32, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: #FFFFFF;
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 200;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .toast-banner.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST BANNER -->
+  <div id="toast" class="toast-banner">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Запись добавлена</span>
+  </div>
+
+  <div class="app-container">
+
+    <!-- 1. TOP HEADER -->
+    <header class="top-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#30D158" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-title">
+          FitPulse
+          <span class="badge-live">iOS PWA</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon-subtle" id="btnSettings" title="Настройки и цели" onclick="openSettingsModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- DATE NAVIGATOR -->
+    <div class="date-nav-bar">
+      <button class="date-nav-btn" onclick="changeDay(-1)" title="Предыдущий день">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <div class="date-display-wrap" onclick="jumpToToday()">
+        <div class="date-title" id="dateTitle">
+          Сегодня, 19 октября
+          <span class="btn-today-pill" id="todayIndicator" style="display:none;">Сегодня</span>
+        </div>
+        <div class="date-subtitle" id="dateSubtitle">Понедельник</div>
+      </div>
+
+      <button class="date-nav-btn" onclick="changeDay(1)" title="Следующий день">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 2. WEIGHT GOAL PROGRESS CARD -->
+    <section class="card weight-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Цель по весу
+        </div>
+        <button class="btn-sm-action" onclick="openWeightModal()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Вес
+        </button>
+      </div>
+
+      <div class="weight-meta-grid">
+        <div>
+          <div class="weight-col-val" id="dispStartWeight">100<small>кг</small></div>
+          <div class="weight-col-label">Старт</div>
+        </div>
+        <div style="text-align: center;">
+          <div class="weight-col-val" style="color: var(--accent-green);" id="dispCurrentWeight">92.4<small>кг</small></div>
+          <div class="weight-col-label">Текущий</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="weight-col-val" style="color: var(--accent-cyan);" id="dispTargetWeight">85<small>кг</small></div>
+          <div class="weight-col-label">Цель</div>
+        </div>
+      </div>
+
+      <div class="weight-progress-track">
+        <div class="weight-progress-fill" id="weightFill" style="width: 50%;"></div>
+      </div>
+
+      <div class="weight-footer-info">
+        <div class="weight-lost-badge" id="weightLostBadge">
+          <span>↓ Сброшено 7.6 кг</span>
+        </div>
+        <div id="weightPercentBadge">51% к цели</div>
+      </div>
+    </section>
+
+    <!-- 3. GITHUB-STYLE ACTIVITY CALENDAR -->
+    <section class="card calendar-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Активность (45 дней)
+        </div>
+        <div class="calendar-legend-bar">
+          <span>Меньше</span>
+          <div class="legend-box lvl-0"></div>
+          <div class="legend-box lvl-1"></div>
+          <div class="legend-box lvl-2"></div>
+          <div class="legend-box lvl-3"></div>
+          <div class="legend-box lvl-4"></div>
+          <span>Больше</span>
+        </div>
+      </div>
+
+      <div class="calendar-scroll-wrap" id="calScrollWrap">
+        <div class="github-grid" id="githubGrid">
+          <!-- Generated via JS -->
+        </div>
+      </div>
+
+      <div class="cal-selected-info">
+        <div class="cal-selected-date" id="calSelectedDateText">Выбран день: 19 окт</div>
+        <div class="cal-selected-summary" id="calSelectedSummary">0 ккал • 0 мл • 0 никотина</div>
+      </div>
+    </section>
+
+    <!-- 4. METRICS 2x2 (STEPS, CALORIES, WATER, NICOTINE) -->
+    <div class="metrics-2x2">
+      <!-- Steps -->
+      <div class="mini-card" onclick="openStepsModal()">
+        <div class="mini-card-head">
+          <span class="mini-card-title">Шаги</span>
+          <span class="mini-card-icon">👟</span>
+        </div>
+        <div class="mini-card-val" id="dispSteps">0 <small>/ 15k</small></div>
+        <div class="mini-progress-bar">
+          <div class="mini-progress-fill" id="stepsFill" style="background: var(--accent-purple); width: 0%;"></div>
+        </div>
+        <div class="mini-subtext">
+          <span id="stepsKm">0.0 км</span>
+          <span style="color: var(--accent-purple);">✏️ Изменить</span>
+        </div>
+      </div>
+
+      <!-- Calories -->
+      <div class="mini-card" onclick="openAddModal('food')">
+        <div class="mini-card-head">
+          <span class="mini-card-title">Калории</span>
+          <span class="mini-card-icon">🍏</span>
+        </div>
+        <div class="mini-card-val" id="dispCalories">0 <small>ккал</small></div>
+        <div class="mini-progress-bar">
+          <div class="mini-progress-fill" id="caloriesFill" style="background: var(--accent-green); width: 0%;"></div>
+        </div>
+        <div class="mini-subtext">
+          <span id="caloriesRemaining">Осталось 2100</span>
+          <span>+ Еда</span>
+        </div>
+      </div>
+
+      <!-- Water -->
+      <div class="mini-card" onclick="openAddModal('drink')">
+        <div class="mini-card-head">
+          <span class="mini-card-title">Вода</span>
+          <span class="mini-card-icon">💧</span>
+        </div>
+        <div class="mini-card-val" id="dispWater">0 <small>мл</small></div>
+        <div class="mini-progress-bar">
+          <div class="mini-progress-fill" id="waterFill" style="background: var(--accent-cyan); width: 0%;"></div>
+        </div>
+        <div class="mini-subtext">
+          <span id="waterGoalText">Цель 2500 мл</span>
+          <span>+ Вода</span>
+        </div>
+      </div>
+
+      <!-- Nicotine -->
+      <div class="mini-card" onclick="openAddModal('nicotine')">
+        <div class="mini-card-head">
+          <span class="mini-card-title">Никотин</span>
+          <span class="mini-card-icon">🚬</span>
+        </div>
+        <div class="mini-card-val" id="dispNicotine">0 <small>всего</small></div>
+        <div class="mini-progress-bar">
+          <div class="mini-progress-fill" id="nicotineFill" style="background: var(--accent-orange); width: 0%;"></div>
+        </div>
+        <div class="mini-subtext">
+          <span id="nicotineDetail">0 стик • 0 сиг</span>
+          <span>+ Лог</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. TIMELINE FEED -->
+    <section class="card timeline-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Лента за день
+        </div>
+        <span style="font-size: 11px; color: var(--text-tertiary);" id="timelineCount">0 записей</span>
+      </div>
+
+      <div class="timeline-list" id="timelineList">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FIXED BOTTOM DOCK (iOS Style) -->
+  <div class="bottom-dock">
+    <div class="dock-inner">
+      <button class="btn-dock-quick" onclick="quickAddWater(250)" title="Быстрый стакан воды">
+        <span>💧 +250 мл</span>
+      </button>
+      <button class="btn-dock-quick" onclick="quickAddNicotine('stick')" title="Быстрый стик">
+        <span>💨 +1 Стик</span>
+      </button>
+      <button class="btn-quick-primary" onclick="openAddModal('food')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Записать
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD LOG ENTRY (BOTTOM SHEET) -->
+  <div class="modal-overlay" id="addModalOverlay" onclick="handleOverlayClick(event, 'addModalOverlay')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" id="sheetTitle">Новая запись</div>
+        <button class="sheet-close-btn" onclick="closeModal('addModalOverlay')">✕</button>
+      </div>
+
+      <!-- Segmented Control -->
+      <div class="segmented-control">
+        <div class="seg-item active" id="segFood" onclick="switchCategory('food')">🍏 Еда</div>
+        <div class="seg-item" id="segDrink" onclick="switchCategory('drink')">💧 Питье</div>
+        <div class="seg-item" id="segNicotine" onclick="switchCategory('nicotine')">🚬 Никотин</div>
+      </div>
+
+      <!-- 1. CATEGORY: FOOD FORM -->
+      <div id="formSectionFood">
+        <div class="form-group">
+          <label class="form-label">Название блюда</label>
+          <input type="text" id="foodName" class="form-input" placeholder="Например: Онигири с тунцом" autocomplete="off">
+          <div class="quick-tags">
+            <span class="tag-pill" onclick="setFoodQuick('Онигири', 180)">Онигири (180)</span>
+            <span class="tag-pill" onclick="setFoodQuick('Пюре с котлетой', 420)">Пюре с котлетой (420)</span>
+            <span class="tag-pill" onclick="setFoodQuick('Грудка с рисом', 380)">Грудка с рисом (380)</span>
+            <span class="tag-pill" onclick="setFoodQuick('Салат овощной', 120)">Салат (120)</span>
+            <span class="tag-pill" onclick="setFoodQuick('Кофе без сахара', 15)">Кофе (15)</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Калории (ккал)</label>
+            <input type="number" id="foodCalories" class="form-input" placeholder="250" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Время</label>
+            <input type="time" id="foodTime" class="form-input">
+          </div>
+        </div>
+
+        <button class="btn-submit-main" onclick="submitFoodLog()">
+          <span>Записать еду</span>
+        </button>
+      </div>
+
+      <!-- 2. CATEGORY: DRINK FORM -->
+      <div id="formSectionDrink" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Что пьешь</label>
+          <select id="drinkTypeSelect" class="form-input" style="appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill=%238E8E93 height=%2224%22 viewBox=%220 0 24 24%22 width=%2224%22 xmlns=%22http://www.w3.org/2000/svg%22><path d=%22M7 10l5 5 5-5z%22/></svg>'); background-repeat: no-repeat; background-position: right 10px center;">
+            <option value="Вода">Вода</option>
+            <option value="Минералка (Сарыагаш)">Минералка (Сарыагаш)</option>
+            <option value="Чай / Кофе">Чай / Кофе</option>
+            <option value="Кола Zero">Кола Zero</option>
+            <option value="Другой напиток">Другой напиток</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Быстрый объем (нажми для записи):</label>
+          <div class="drinks-round-grid">
+            <div class="drink-circle-btn" onclick="submitDrinkPreset(125)">
+              <div class="vol-main">0.5 стакана</div>
+              <div class="vol-sub">125 мл</div>
+            </div>
+            <div class="drink-circle-btn" onclick="submitDrinkPreset(250)">
+              <div class="vol-main">1 стакан</div>
+              <div class="vol-sub">250 мл</div>
+            </div>
+            <div class="drink-circle-btn" onclick="submitDrinkPreset(1000)">
+              <div class="vol-main">1 литр</div>
+              <div class="vol-sub">1000 мл</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Свой объем (мл)</label>
+            <input type="number" id="drinkCustomMl" class="form-input" placeholder="например 330" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Время</label>
+            <input type="time" id="drinkTime" class="form-input">
+          </div>
+        </div>
+
+        <button class="btn-submit-main" style="background: var(--accent-cyan);" onclick="submitCustomDrink()">
+          <span>Записать напиток</span>
+        </button>
+      </div>
+
+      <!-- 3. CATEGORY: NICOTINE FORM -->
+      <div id="formSectionNicotine" style="display: none;">
+        <label class="form-label">Быстрый клик (сразу запишет текущее время):</label>
+        <div class="nicotine-grid">
+          <div class="nic-action-btn" onclick="submitNicotineQuick('stick')">
+            <span class="nic-icon">💨</span>
+            <span class="nic-label">+1 Стик</span>
+          </div>
+          <div class="nic-action-btn" onclick="submitNicotineQuick('cigarette')">
+            <span class="nic-icon">🚬</span>
+            <span class="nic-label">+1 Сигарета</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Время события</label>
+            <input type="time" id="nicotineTime" class="form-input">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STEPS -->
+  <div class="modal-overlay" id="stepsModalOverlay" onclick="handleOverlayClick(event, 'stepsModalOverlay')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Шаги за день</div>
+        <button class="sheet-close-btn" onclick="closeModal('stepsModalOverlay')">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Пройдено шагов (из Apple Здоровье / фитнес-трекера)</label>
+        <input type="number" id="stepsInput" class="form-input" placeholder="например 10500" inputmode="numeric">
+      </div>
+
+      <div class="quick-tags">
+        <span class="tag-pill" onclick="document.getElementById('stepsInput').value = 5000">5 000</span>
+        <span class="tag-pill" onclick="document.getElementById('stepsInput').value = 8000">8 000</span>
+        <span class="tag-pill" onclick="document.getElementById('stepsInput').value = 10000">10 000</span>
+        <span class="tag-pill" onclick="document.getElementById('stepsInput').value = 15000">15 000</span>
+      </div>
+
+      <button class="btn-submit-main" style="background: var(--accent-purple); color: #fff;" onclick="submitSteps()">
+        <span>Сохранить шаги</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: WEIGHT -->
+  <div class="modal-overlay" id="weightModalOverlay" onclick="handleOverlayClick(event, 'weightModalOverlay')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Записать вес</div>
+        <button class="sheet-close-btn" onclick="closeModal('weightModalOverlay')">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Текущий вес (кг)</label>
+        <input type="number" step="0.1" id="currentWeightInput" class="form-input" placeholder="92.4" inputmode="decimal">
+      </div>
+
+      <button class="btn-submit-main" onclick="submitWeight()">
+        <span>Обновить вес</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS & TARGETS -->
+  <div class="modal-overlay" id="settingsModalOverlay" onclick="handleOverlayClick(event, 'settingsModalOverlay')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Настройки и цели</div>
+        <button class="sheet-close-btn" onclick="closeModal('settingsModalOverlay')">✕</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Стартовый вес (кг)</label>
+          <input type="number" step="0.1" id="setStartWeight" class="form-input" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Целевой вес (кг)</label>
+          <input type="number" step="0.1" id="setTargetWeight" class="form-input" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Норма калорий</label>
+          <input type="number" id="setCalorieTarget" class="form-input" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Норма шагов</label>
+          <input type="number" id="setStepTarget" class="form-input" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Норма воды (мл)</label>
+        <input type="number" id="setWaterTarget" class="form-input" inputmode="numeric">
+      </div>
+
+      <button class="btn-submit-main" onclick="saveSettings()">
+        <span>Сохранить настройки</span>
+      </button>
+
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <label class="form-label">Резервная копия данных (JSON)</label>
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+          <button class="btn-sm-action" style="flex: 1; justify-content: center; height: 38px;" onclick="exportDataJson()">
+            📥 Экспорт в JSON
+          </button>
+          <button class="btn-sm-action" style="flex: 1; justify-content: center; height: 38px;" onclick="triggerImportJson()">
+            📤 Импорт JSON
+          </button>
+          <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importDataJson(event)">
+        </div>
+
+        <button class="btn-sm-action" style="width: 100%; justify-content: center; height: 38px; margin-top: 14px; color: var(--accent-red); border-color: rgba(255, 69, 58, 0.3); background: var(--accent-red-dim);" onclick="resetAllData()">
+          🧹 Сбросить все данные и начать с нуля
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ----------------------------------------------------
+       VANILLA JAVASCRIPT APP LOGIC
+  ---------------------------------------------------- -->
+  <script>
+    /* ====================================================
+       1. DATA STRUCTURE & LOCAL STORAGE MANAGER
+    ==================================================== */
+    const STORAGE_KEY_DATA = 'fitpulse_data_v2';
+    const STORAGE_KEY_PROFILE = 'fitpulse_profile_v2';
+
+    // Default Profile
+    const defaultProfile = {
+      startWeight: 100.0,
+      currentWeight: 100.0,
+      targetWeight: 85.0,
+      calorieTarget: 2100,
+      waterTarget: 2500,
+      stepTarget: 15000
+    };
+
+    let profile = loadProfile();
+    let daysData = loadDaysData();
+    let selectedDate = getTodayDateStr();
+
+    function loadProfile() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_PROFILE);
+        return raw ? { ...defaultProfile, ...JSON.parse(raw) } : defaultProfile;
+      } catch (e) {
+        return defaultProfile;
+      }
+    }
+
+    function saveProfile() {
+      localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(profile));
+    }
+
+    function loadDaysData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_DATA);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {
+        console.error('Error loading data', e);
+      }
+      // Start completely fresh with an empty object
+      const initial = {};
+      localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(initial));
+      return initial;
+    }
+
+    function saveDaysData() {
+      localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(daysData));
+    }
+
+    function resetAllData() {
+      if (confirm('Сбросить все записи и начать заново с чистого листа?')) {
+        daysData = {};
+        profile.currentWeight = profile.startWeight;
+        saveDaysData();
+        saveProfile();
+        showToast('🧹 Все данные очищены');
+        closeModal('settingsModalOverlay');
+        renderApp();
+      }
+    }
+
+    /* ====================================================
+       2. DATE UTILITIES
+    ==================================================== */
+    function formatDateToKey(dateObj) {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function parseDateKey(keyStr) {
+      const [y, m, d] = keyStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function getTodayDateStr() {
+      return formatDateToKey(new Date());
+    }
+
+    function getNowTimeStr() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
+    const MONTHS_RU_GENITIVE = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const MONTHS_RU_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    const DAYS_RU = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+    function getDayData(dateStr) {
+      if (!daysData[dateStr]) {
+        daysData[dateStr] = {
+          steps: 0,
+          weight: null,
+          logs: []
+        };
+      }
+      return daysData[dateStr];
+    }
+
+    /* ====================================================
+       3. RENDER CORE UI
+    ==================================================== */
+    function renderApp() {
+      renderDateHeader();
+      renderWeightCard();
+      renderCalendar();
+      renderMetrics();
+      renderTimeline();
+    }
+
+    // Header & Date Nav
+    function renderDateHeader() {
+      const parsed = parseDateKey(selectedDate);
+      const todayStr = getTodayDateStr();
+      const isToday = selectedDate === todayStr;
+
+      const dayNum = parsed.getDate();
+      const monthName = MONTHS_RU_GENITIVE[parsed.getMonth()];
+      const weekDayName = DAYS_RU[parsed.getDay()];
+
+      const titleEl = document.getElementById('dateTitle');
+      const subEl = document.getElementById('dateSubtitle');
+      const indicator = document.getElementById('todayIndicator');
+
+      if (isToday) {
+        titleEl.childNodes[0].textContent = `Сегодня, ${dayNum} ${monthName} `;
+        indicator.style.display = 'inline-block';
+      } else {
+        titleEl.childNodes[0].textContent = `${dayNum} ${monthName} `;
+        indicator.style.display = 'none';
+      }
+      subEl.textContent = weekDayName;
+    }
+
+    function changeDay(delta) {
+      const parsed = parseDateKey(selectedDate);
+      parsed.setDate(parsed.getDate() + delta);
+      selectedDate = formatDateToKey(parsed);
+      triggerHaptic();
+      renderApp();
+    }
+
+    function jumpToToday() {
+      selectedDate = getTodayDateStr();
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Weight Progress Card
+    function renderWeightCard() {
+      document.getElementById('dispStartWeight').innerHTML = `${profile.startWeight}<small>кг</small>`;
+      document.getElementById('dispCurrentWeight').innerHTML = `${profile.currentWeight}<small>кг</small>`;
+      document.getElementById('dispTargetWeight').innerHTML = `${profile.targetWeight}<small>кг</small>`;
+
+      const totalToLose = Math.max(0.1, profile.startWeight - profile.targetWeight);
+      const lost = +(profile.startWeight - profile.currentWeight).toFixed(1);
+      const remaining = +(profile.currentWeight - profile.targetWeight).toFixed(1);
+
+      let pct = Math.round((lost / totalToLose) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+
+      document.getElementById('weightFill').style.width = `${pct}%`;
+      document.getElementById('weightPercentBadge').textContent = `${pct}% к цели`;
+
+      const lostBadge = document.getElementById('weightLostBadge');
+      if (lost >= 0) {
+        lostBadge.innerHTML = `<span style="color: var(--accent-green);">↓ Сброшено ${lost} кг (осталось ${Math.max(0, remaining)} кг)</span>`;
+      } else {
+        lostBadge.innerHTML = `<span style="color: var(--accent-orange);">↑ +${Math.abs(lost)} кг</span>`;
+      }
+    }
+
+    // 45-day GitHub Activity Calendar
+    function renderCalendar() {
+      const grid = document.getElementById('githubGrid');
+      grid.innerHTML = '';
+
+      const today = new Date();
+      const numDays = 49; // 7 weeks grid
+      const days = [];
+
+      for (let i = numDays - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        days.push(d);
+      }
+
+      for (const d of days) {
+        const key = formatDateToKey(d);
+        const data = daysData[key];
+
+        let totalCal = 0;
+        let totalWater = 0;
+        let nicCount = 0;
+        let steps = 0;
+
+        if (data) {
+          steps = data.steps || 0;
+          for (const l of data.logs || []) {
+            if (l.category === 'food') totalCal += Number(l.calories) || 0;
+            if (l.category === 'drink') totalWater += Number(l.amountMl) || 0;
+            if (l.category === 'nicotine') nicCount += 1;
+          }
+        }
+
+        // Intensity calculation (0 to 4)
+        let score = 0;
+        if (totalCal > 0 || totalWater > 0 || steps > 0 || nicCount > 0) score = 1;
+        if (totalCal >= 800 || steps >= 5000 || totalWater >= 1000) score = 2;
+        if (totalCal >= 1400 || steps >= 9000 || totalWater >= 1800) score = 3;
+        if ((totalCal >= 1600 && steps >= 10000) || totalWater >= 2200) score = 4;
+
+        const cell = document.createElement('div');
+        cell.className = `heat-cell lvl-${score} ${key === selectedDate ? 'selected' : ''}`;
+        cell.title = `${key}: ${totalCal} ккал, ${steps} шагов`;
+        cell.onclick = () => {
+          selectedDate = key;
+          triggerHaptic();
+          renderApp();
+        };
+
+        grid.appendChild(cell);
+      }
+
+      // Update selected summary text
+      const parsed = parseDateKey(selectedDate);
+      const dayData = getDayData(selectedDate);
+      let cal = 0, water = 0, nic = 0;
+      for (const l of dayData.logs || []) {
+        if (l.category === 'food') cal += Number(l.calories) || 0;
+        if (l.category === 'drink') water += Number(l.amountMl) || 0;
+        if (l.category === 'nicotine') nic += 1;
+      }
+
+      document.getElementById('calSelectedDateText').textContent = `Выбран день: ${parsed.getDate()} ${MONTHS_RU_SHORT[parsed.getMonth()]}`;
+      document.getElementById('calSelectedSummary').textContent = `${cal} ккал • ${water} мл • ${nic} никотина • ${dayData.steps || 0} шагов`;
+
+      // Auto-scroll calendar right on mobile
+      const scrollWrap = document.getElementById('calScrollWrap');
+      scrollWrap.scrollLeft = scrollWrap.scrollWidth;
+    }
+
+    // 2x2 Metrics Cards
+    function renderMetrics() {
+      const data = getDayData(selectedDate);
+      let calories = 0;
+      let water = 0;
+      let sticks = 0;
+      let cigs = 0;
+
+      for (const log of data.logs || []) {
+        if (log.category === 'food') calories += Number(log.calories) || 0;
+        if (log.category === 'drink') water += Number(log.amountMl) || 0;
+        if (log.category === 'nicotine') {
+          if (log.nicotineType === 'stick') sticks++;
+          else if (log.nicotineType === 'cigarette') cigs++;
+          else sticks++;
+        }
+      }
+
+      const steps = data.steps || 0;
+      const stepTarget = profile.stepTarget || 15000;
+      const calTarget = profile.calorieTarget || 2100;
+      const waterTarget = profile.waterTarget || 2500;
+
+      // Steps
+      document.getElementById('dispSteps').innerHTML = `${steps.toLocaleString('ru-RU')} <small>/ ${(stepTarget/1000).toFixed(0)}k</small>`;
+      const stepPct = Math.min(100, Math.round((steps / stepTarget) * 100));
+      document.getElementById('stepsFill').style.width = `${stepPct}%`;
+      const km = (steps * 0.00075).toFixed(1);
+      document.getElementById('stepsKm').textContent = `${km} км • ${Math.round(steps * 0.04)} ккал`;
+
+      // Calories
+      document.getElementById('dispCalories').innerHTML = `${calories} <small>ккал</small>`;
+      const calPct = Math.min(100, Math.round((calories / calTarget) * 100));
+      document.getElementById('caloriesFill').style.width = `${calPct}%`;
+      const remaining = calTarget - calories;
+      document.getElementById('caloriesRemaining').textContent = remaining >= 0 ? `Осталось ${remaining}` : `Перебор +${Math.abs(remaining)}`;
+
+      // Water
+      document.getElementById('dispWater').innerHTML = `${water} <small>мл</small>`;
+      const waterPct = Math.min(100, Math.round((water / waterTarget) * 100));
+      document.getElementById('waterFill').style.width = `${waterPct}%`;
+      document.getElementById('waterGoalText').textContent = `Цель ${waterTarget} мл (${waterPct}%)`;
+
+      // Nicotine
+      const nicTotal = sticks + cigs;
+      document.getElementById('dispNicotine').innerHTML = `${nicTotal} <small>всего</small>`;
+      document.getElementById('nicotineDetail').textContent = `${sticks} стик • ${cigs} сиг`;
+      const nicPct = Math.min(100, nicTotal * 10);
+      document.getElementById('nicotineFill').style.width = `${nicPct}%`;
+    }
+
+    // Timeline Feed
+    function renderTimeline() {
+      const data = getDayData(selectedDate);
+      const listEl = document.getElementById('timelineList');
+      const countEl = document.getElementById('timelineCount');
+      listEl.innerHTML = '';
+
+      const logs = (data.logs || []).slice().sort((a, b) => a.time.localeCompare(b.time));
+      countEl.textContent = `${logs.length} ${getNounRu(logs.length, 'запись', 'записи', 'записей')}`;
+
+      if (logs.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-text">В этот день пока нет записей</div>
+            <div style="font-size: 11px; margin-top: 4px; color: var(--accent-green); cursor: pointer;" onclick="openAddModal('food')">+ Добавить прием пищи или напиток</div>
+          </div>
+        `;
+        return;
+      }
+
+      for (const item of logs) {
+        const row = document.createElement('div');
+        row.className = 'timeline-item';
+
+        let badgeIcon = '🍽️';
+        let badgeClass = 'food';
+        let detailText = '';
+
+        if (item.category === 'food') {
+          badgeIcon = '🍏';
+          badgeClass = 'food';
+          detailText = `${item.calories} ккал`;
+        } else if (item.category === 'drink') {
+          badgeIcon = '💧';
+          badgeClass = 'drink';
+          detailText = `${item.amountMl} мл`;
+        } else if (item.category === 'nicotine') {
+          badgeIcon = item.nicotineType === 'stick' ? '💨' : '🚬';
+          badgeClass = 'nicotine';
+          detailText = item.nicotineType === 'stick' ? 'Стик Heets' : 'Сигарета';
+        }
+
+        row.innerHTML = `
+          <div class="tl-left">
+            <span class="tl-time">${escapeHtml(item.time)}</span>
+            <div class="tl-badge ${badgeClass}">${badgeIcon}</div>
+            <div class="tl-content">
+              <span class="tl-name">${escapeHtml(item.name)}</span>
+              <span class="tl-detail">${detailText}</span>
+            </div>
+          </div>
+          <button class="tl-del-btn" title="Удалить" onclick="deleteLogItem('${item.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        `;
+
+        listEl.appendChild(row);
+      }
+    }
+
+    function deleteLogItem(logId) {
+      const data = getDayData(selectedDate);
+      data.logs = (data.logs || []).filter(l => l.id !== logId);
+      saveDaysData();
+      triggerHaptic();
+      showToast('🗑️ Запись удалена');
+      renderApp();
+    }
+
+    /* ====================================================
+       4. QUICK LOGGING & MODAL INTERACTIONS
+    ==================================================== */
+    let currentCategory = 'food';
+
+    function openAddModal(category = 'food') {
+      currentCategory = category;
+      switchCategory(category);
+      document.getElementById('foodTime').value = getNowTimeStr();
+      document.getElementById('drinkTime').value = getNowTimeStr();
+      document.getElementById('nicotineTime').value = getNowTimeStr();
+      document.getElementById('addModalOverlay').classList.add('active');
+      triggerHaptic();
+
+      if (category === 'food') {
+        setTimeout(() => document.getElementById('foodName').focus(), 300);
+      }
+    }
+
+    function switchCategory(cat) {
+      currentCategory = cat;
+      const segFood = document.getElementById('segFood');
+      const segDrink = document.getElementById('segDrink');
+      const segNicotine = document.getElementById('segNicotine');
+
+      const secFood = document.getElementById('formSectionFood');
+      const secDrink = document.getElementById('formSectionDrink');
+      const secNicotine = document.getElementById('formSectionNicotine');
+
+      segFood.classList.toggle('active', cat === 'food');
+      segDrink.classList.toggle('active', cat === 'drink');
+      segNicotine.classList.toggle('active', cat === 'nicotine');
+
+      secFood.style.display = cat === 'food' ? 'block' : 'none';
+      secDrink.style.display = cat === 'drink' ? 'block' : 'none';
+      secNicotine.style.display = cat === 'nicotine' ? 'block' : 'none';
+
+      const titleMap = { food: 'Записать прием пищи', drink: 'Записать напиток', nicotine: 'Записать никотин' };
+      document.getElementById('sheetTitle').textContent = titleMap[cat] || 'Новая запись';
+      triggerHaptic();
+    }
+
+    function setFoodQuick(name, cal) {
+      document.getElementById('foodName').value = name;
+      document.getElementById('foodCalories').value = cal;
+      triggerHaptic();
+    }
+
+    // Submit Food
+    function submitFoodLog() {
+      const name = document.getElementById('foodName').value.trim();
+      const calories = parseInt(document.getElementById('foodCalories').value, 10);
+      const time = document.getElementById('foodTime').value || getNowTimeStr();
+
+      if (!name) {
+        showToast('⚠️ Введи название блюда');
+        document.getElementById('foodName').focus();
+        return;
+      }
+
+      const day = getDayData(selectedDate);
+      day.logs.push({
+        id: 'log_' + Date.now(),
+        time,
+        category: 'food',
+        name,
+        calories: isNaN(calories) ? 0 : calories,
+        amountMl: 0,
+        nicotineType: null
+      });
+
+      saveDaysData();
+      closeModal('addModalOverlay');
+      showToast('🍏 Еда записана');
+      triggerHaptic();
+
+      document.getElementById('foodName').value = '';
+      document.getElementById('foodCalories').value = '';
+      renderApp();
+    }
+
+    // Submit Drink Preset
+    function submitDrinkPreset(ml) {
+      const type = document.getElementById('drinkTypeSelect').value;
+      const time = document.getElementById('drinkTime').value || getNowTimeStr();
+
+      const day = getDayData(selectedDate);
+      day.logs.push({
+        id: 'log_' + Date.now(),
+        time,
+        category: 'drink',
+        name: type,
+        calories: 0,
+        amountMl: ml,
+        nicotineType: null
+      });
+
+      saveDaysData();
+      closeModal('addModalOverlay');
+      showToast(`💧 Записано ${ml} мл`);
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Submit Custom Drink
+    function submitCustomDrink() {
+      const type = document.getElementById('drinkTypeSelect').value;
+      const ml = parseInt(document.getElementById('drinkCustomMl').value, 10);
+      const time = document.getElementById('drinkTime').value || getNowTimeStr();
+
+      if (!ml || ml <= 0) {
+        showToast('⚠️ Введи объем в мл');
+        return;
+      }
+
+      const day = getDayData(selectedDate);
+      day.logs.push({
+        id: 'log_' + Date.now(),
+        time,
+        category: 'drink',
+        name: type,
+        calories: 0,
+        amountMl: ml,
+        nicotineType: null
+      });
+
+      saveDaysData();
+      closeModal('addModalOverlay');
+      showToast(`💧 Записано ${ml} мл`);
+      triggerHaptic();
+      document.getElementById('drinkCustomMl').value = '';
+      renderApp();
+    }
+
+    // Direct Quick Water from Bottom Dock
+    function quickAddWater(ml) {
+      const day = getDayData(selectedDate);
+      day.logs.push({
+        id: 'log_' + Date.now(),
+        time: getNowTimeStr(),
+        category: 'drink',
+        name: 'Вода',
+        calories: 0,
+        amountMl: ml,
+        nicotineType: null
+      });
+
+      saveDaysData();
+      showToast(`💧 +${ml} мл воды`);
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Submit Nicotine Quick
+    function submitNicotineQuick(subtype) {
+      const time = document.getElementById('nicotineTime').value || getNowTimeStr();
+      quickAddNicotine(subtype, time);
+      closeModal('addModalOverlay');
+    }
+
+    function quickAddNicotine(subtype, time = getNowTimeStr()) {
+      const day = getDayData(selectedDate);
+      const label = subtype === 'stick' ? 'Стик' : 'Сигарета';
+
+      day.logs.push({
+        id: 'log_' + Date.now(),
+        time,
+        category: 'nicotine',
+        name: label,
+        calories: 0,
+        amountMl: 0,
+        nicotineType: subtype
+      });
+
+      saveDaysData();
+      showToast(subtype === 'stick' ? '💨 +1 Стик записан' : '🚬 +1 Сигарета записана');
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Steps Modal & Save
+    function openStepsModal() {
+      const day = getDayData(selectedDate);
+      document.getElementById('stepsInput').value = day.steps || '';
+      document.getElementById('stepsModalOverlay').classList.add('active');
+      triggerHaptic();
+      setTimeout(() => document.getElementById('stepsInput').focus(), 300);
+    }
+
+    function submitSteps() {
+      const val = parseInt(document.getElementById('stepsInput').value, 10);
+      const day = getDayData(selectedDate);
+      day.steps = isNaN(val) ? 0 : Math.max(0, val);
+
+      saveDaysData();
+      closeModal('stepsModalOverlay');
+      showToast(`👟 Шаги обновлены: ${day.steps}`);
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Weight Modal & Save
+    function openWeightModal() {
+      document.getElementById('currentWeightInput').value = profile.currentWeight;
+      document.getElementById('weightModalOverlay').classList.add('active');
+      triggerHaptic();
+      setTimeout(() => document.getElementById('currentWeightInput').focus(), 300);
+    }
+
+    function submitWeight() {
+      const val = parseFloat(document.getElementById('currentWeightInput').value);
+      if (isNaN(val) || val <= 30 || val >= 300) {
+        showToast('⚠️ Введи корректный вес');
+        return;
+      }
+
+      profile.currentWeight = +val.toFixed(1);
+      saveProfile();
+
+      const day = getDayData(selectedDate);
+      day.weight = profile.currentWeight;
+      saveDaysData();
+
+      closeModal('weightModalOverlay');
+      showToast(`⚖️ Вес обновлен: ${profile.currentWeight} кг`);
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Settings Modal
+    function openSettingsModal() {
+      document.getElementById('setStartWeight').value = profile.startWeight;
+      document.getElementById('setTargetWeight').value = profile.targetWeight;
+      document.getElementById('setCalorieTarget').value = profile.calorieTarget;
+      document.getElementById('setStepTarget').value = profile.stepTarget;
+      document.getElementById('setWaterTarget').value = profile.waterTarget;
+
+      document.getElementById('settingsModalOverlay').classList.add('active');
+      triggerHaptic();
+    }
+
+    function saveSettings() {
+      profile.startWeight = parseFloat(document.getElementById('setStartWeight').value) || profile.startWeight;
+      profile.targetWeight = parseFloat(document.getElementById('setTargetWeight').value) || profile.targetWeight;
+      profile.calorieTarget = parseInt(document.getElementById('setCalorieTarget').value, 10) || profile.calorieTarget;
+      profile.stepTarget = parseInt(document.getElementById('setStepTarget').value, 10) || profile.stepTarget;
+      profile.waterTarget = parseInt(document.getElementById('setWaterTarget').value, 10) || profile.waterTarget;
+
+      saveProfile();
+      closeModal('settingsModalOverlay');
+      showToast('⚙️ Настройки сохранены');
+      triggerHaptic();
+      renderApp();
+    }
+
+    // Export & Import JSON
+    function exportDataJson() {
+      const dump = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        profile,
+        daysData
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dump, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `fitpulse_backup_${getTodayDateStr()}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      showToast('💾 Бэкап скачан');
+    }
+
+    function triggerImportJson() {
+      document.getElementById('importFileInput').click();
+    }
+
+    function importDataJson(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed.profile) {
+            profile = { ...profile, ...parsed.profile };
+            saveProfile();
+          }
+          if (parsed.daysData) {
+            daysData = { ...daysData, ...parsed.daysData };
+            saveDaysData();
+          }
+          showToast('✅ Данные успешно импортированы');
+          closeModal('settingsModalOverlay');
+          renderApp();
+        } catch (err) {
+          showToast('❌ Ошибка чтения файла JSON');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /* ====================================================
+       5. HELPERS (TOAST, MODALS, HAPTIC)
+    ==================================================== */
+    function closeModal(overlayId) {
+      document.getElementById(overlayId).classList.remove('active');
+    }
+
+    function handleOverlayClick(e, overlayId) {
+      if (e.target.id === overlayId) {
+        closeModal(overlayId);
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.textContent = msg;
+
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2300);
+    }
+
+    function triggerHaptic() {
+      if (window.navigator && window.navigator.vibrate) {
+        try { window.navigator.vibrate(15); } catch (e) {}
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function getNounRu(number, one, two, five) {
+      let n = Math.abs(number);
+      n %= 100;
+      if (n >= 5 && n <= 20) return five;
+      n %= 10;
+      if (n === 1) return one;
+      if (n >= 2 && n <= 4) return two;
+      return five;
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderApp();
+    });
+  </script>
+</body>
+</html>
